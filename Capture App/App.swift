@@ -9,15 +9,14 @@ import SwiftUI
 import ComposableArchitecture
 
 @main
-struct Capture_AppApp: App {
+struct FoodSizer: App {
     
-    static let store = Store(initialState:CounterFeature.State()){
-        CounterFeature()
-        ._printChanges()
-    }
+    static let store = Store(initialState: AppFeature.State()) {
+        AppFeature()
+      }
     var body: some Scene {
         WindowGroup {
-            CounterView(store: Capture_AppApp.store)
+            AppView(store:FoodSizer.store)
         }
     }
 }

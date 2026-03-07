@@ -149,7 +149,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 52E247C32F5B248200AAFA83 /* Build configuration list for PBXProject "Capture App" */;
+			buildConfigurationList = 52E247C32F5B248200AAFA83 /* Build configuration list for PBXProject "FoodSizer" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -450,7 +450,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		52E247C32F5B248200AAFA83 /* Build configuration list for PBXProject "Capture App" */ = {
+		52E247C32F5B248200AAFA83 /* Build configuration list for PBXProject "FoodSizer" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				52E247D12F5B248600AAFA83 /* Debug */,
