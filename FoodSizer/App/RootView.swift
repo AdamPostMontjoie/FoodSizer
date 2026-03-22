@@ -9,15 +9,11 @@ struct RootView: View {
         TabView(selection: $store.selectedTab.sending(\.selectedTab)) {
             
             // TAB 1: The Camera Placeholder (For tomorrow)
-            VStack(spacing: 20) {
-                Image(systemName: "camera.viewfinder")
-                    .font(.system(size: 80))
-                    .foregroundColor(.blue)
-                Text("Scanner Coming Soon...")
-                    .font(.headline)
-            }
+            ScannerPageView(
+                store: store.scope(state: \.scannerTab, action: \.scannerTab)
+            )
             .tabItem {
-                Label("Scanner", systemImage: "camera")
+                Label("Scanner", systemImage: "camera.viewfinder")
             }
             .tag(RootFeature.Tab.camera)
             
