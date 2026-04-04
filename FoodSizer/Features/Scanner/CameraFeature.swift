@@ -12,6 +12,7 @@ struct CameraFeature {
   @ObservableState
  struct State {
      var session:UncheckedSession?
+     var currentMode:CameraMode = .lidar
      var savedMeshUrl:URL?
      var savedFaceUrl:URL?
     }
@@ -23,6 +24,7 @@ struct CameraFeature {
         case saveToDataBase
       }
     @Dependency(\.lidarClient) var lidarClient
+    @Dependency(\.faceClient) var faceClient
     @Dependency(\.databaseClient) var databaseClient
 var body: some Reducer<State, Action> {
     Reduce { state, action in
@@ -43,7 +45,7 @@ var body: some Reducer<State, Action> {
             }
             else { //face scan
                 return .run { send in
-                    let fileUrl = try await lidarClient.captureMesh(session)
+                    let fileUrl = try await faceClient.captureMesh(session)
                     await send(.scanCompleted(fileUrl))
                 }
             }
@@ -52,10 +54,12 @@ var body: some Reducer<State, Action> {
             if state.savedMeshUrl == nil {
                 state.savedMeshUrl = url
                 print("SUCCESS: Object Mesh saved to \(url)")
+                state.currentMode = .face
                 return .none
             }
             else {
                 state.savedFaceUrl = url
+                state.currentMode = .off
                 print("SUCCESS: Face Mesh saved to \(url)")
                 return .send(.saveToDataBase)
             }
@@ -68,7 +72,6 @@ var body: some Reducer<State, Action> {
                     do {
                         try databaseClient.saveSession(objUrl, faceUrl)
                         print("SUCCESS: Database saved.")
-                        
                         //trigger navigation to review screen
                        // await send(.delegate(.scanSuccessfullySaved))
                         
@@ -85,6 +88,15 @@ var body: some Reducer<State, Action> {
 //so overwriting == to make it equatable for tca
 extension CameraFeature.State: Equatable {
     static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.savedMeshUrl == rhs.savedMeshUrl
+        lhs.savedMeshUrl == rhs.savedMeshUrl &&
+        lhs.savedFaceUrl == rhs.savedFaceUrl &&
+        lhs.currentMode == rhs.currentMode
+        
     }
+}
+
+enum CameraMode:Equatable {
+    case lidar //trigger this case from outside. 
+    case face
+    case off
 }

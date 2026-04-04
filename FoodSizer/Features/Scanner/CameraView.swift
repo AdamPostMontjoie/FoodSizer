@@ -16,7 +16,8 @@ struct CameraView:View {
             ARViewContainer(
                 onSessionCreated: { session in
                     store.send(.sessionCreated(session))
-                })
+                },
+                currentMode: store.currentMode)
                 .ignoresSafeArea()
             VStack {
                 Spacer()
