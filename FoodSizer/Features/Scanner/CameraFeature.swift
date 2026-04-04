@@ -13,14 +13,17 @@ struct CameraFeature {
  struct State {
      var session:UncheckedSession?
      var savedMeshUrl:URL?
+     var savedFaceUrl:URL?
     }
     
     enum Action {
         case scanButtonTapped
         case sessionCreated(UncheckedSession)
         case scanCompleted(URL)
+        case saveToDataBase
       }
     @Dependency(\.lidarClient) var lidarClient
+    @Dependency(\.databaseClient) var databaseClient
 var body: some Reducer<State, Action> {
     Reduce { state, action in
         switch action {
@@ -32,15 +35,47 @@ var body: some Reducer<State, Action> {
             print("button tapped")
             guard let session = state.session else { return .none }
             print("creating mesh")
-            return .run{ send in
-                let fileUrl = try await lidarClient.captureMesh(session)
-                await send(.scanCompleted(fileUrl))
+            if state.savedMeshUrl == nil{ //lidar scan
+                return .run { send in
+                    let fileUrl = try await lidarClient.captureMesh(session)
+                    await send(.scanCompleted(fileUrl))
+                }
             }
+            else { //face scan
+                return .run { send in
+                    let fileUrl = try await lidarClient.captureMesh(session)
+                    await send(.scanCompleted(fileUrl))
+                }
+            }
+            
         case let .scanCompleted(url):
-            state.savedMeshUrl = url
-            print("SUCCESS: Mesh saved to \(url)")
-            return .none
-          
+            if state.savedMeshUrl == nil {
+                state.savedMeshUrl = url
+                print("SUCCESS: Object Mesh saved to \(url)")
+                return .none
+            }
+            else {
+                state.savedFaceUrl = url
+                print("SUCCESS: Face Mesh saved to \(url)")
+                return .send(.saveToDataBase)
+            }
+        case .saveToDataBase:
+            guard let objUrl = state.savedMeshUrl, let faceUrl = state.savedFaceUrl
+            else{
+                return .none
+            }
+            return .run { send in
+                    do {
+                        try databaseClient.saveSession(objUrl, faceUrl)
+                        print("SUCCESS: Database saved.")
+                        
+                        //trigger navigation to review screen
+                       // await send(.delegate(.scanSuccessfullySaved))
+                        
+                    } catch {
+                        print("ERROR: Failed to save to DB - \(error)")
+                    }
+                }
       }
     }
   }

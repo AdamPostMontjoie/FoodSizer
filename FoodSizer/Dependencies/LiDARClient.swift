@@ -27,6 +27,7 @@ extension LiDARClient: DependencyKey {
                         var globalVertexOffset = 1
             for ma in meshAnchors {
                     let geometry = ma.geometry
+                   
                     let transform = ma.transform
                     let vertices = geometry.vertices
                     let vertexPointer = vertices.buffer.contents()
@@ -48,6 +49,7 @@ extension LiDARClient: DependencyKey {
                 let faces = geometry.faces
                 let facePointer = faces.buffer.contents()
                 let bytesPerFace = faces.bytesPerIndex * faces.indexCountPerPrimitive
+                let classificationBuffer = geometry.classification
                 
                 for fIndex in 0..<faces.count {
                     // Find the triangle in RAM

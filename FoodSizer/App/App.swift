@@ -7,6 +7,7 @@
 
 import SwiftUI
 import ComposableArchitecture
+import SwiftData
 
 @main
 struct FoodSizer: App {
@@ -18,5 +19,6 @@ struct FoodSizer: App {
         WindowGroup {
             RootView(store:FoodSizer.store)
         }
+        .modelContainer(for: PairedScanSession.self) //initializes database for app
     }
 }
