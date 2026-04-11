@@ -22,6 +22,9 @@ struct ScannerPageFeature {
         
         Reduce { state, action in
             switch action {
+            case .camera(.delegate(.scanSavedToDb)):
+                state.path.append(.scanReview(ScanReviewFeature.State()))
+                return .none
             case .camera:
                 return .none
             case .path:

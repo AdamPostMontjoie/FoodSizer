@@ -22,7 +22,7 @@ extension LiDARClient: DependencyKey {
                     throw FrameError()
             }
             let meshAnchors = frame.anchors.compactMap { $0 as? ARMeshAnchor }
-        
+            //try and write to the ssd in batches, not current implementation
             var objData = "# FoodSizer LiDAR Scan\n"
                         var globalVertexOffset = 1
             for ma in meshAnchors {

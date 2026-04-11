@@ -25,7 +25,7 @@ struct CameraView:View {
                 Button {
                     store.send(.scanButtonTapped)
                 } label: {
-                    Text("Capture Scan")
+                    Text(store.currentMode == .lidar ? "Scan Object":"Scan Face")
                         .font(.headline)
                         .fontWeight(.bold)
                         .foregroundColor(.white)
