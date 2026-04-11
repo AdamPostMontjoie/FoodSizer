@@ -30,11 +30,7 @@ struct ScanReviewView: View {
                     .cornerRadius(12)
             }
             
-            if let fact = store.numberFact {
-                Text(fact)
-                    .padding()
-                    .multilineTextAlignment(.center)
-            }
+            
             
             Spacer()
         }

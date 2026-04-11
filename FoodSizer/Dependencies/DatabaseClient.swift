@@ -11,24 +11,23 @@ import SwiftData
 
 
 struct DatabaseClient:Sendable {
-    var saveSession: @Sendable (_ objURL: URL, _ faceURL: URL) throws -> Void
+    var saveSession: @Sendable (_ scanID:UUID, _ objURL: URL, _ faceURL: URL) throws -> Void
     var deleteSession: @Sendable(_ scanId:UUID, _ objURL: URL, _ faceURL: URL) throws -> Void
     var fetchAllSessions: @Sendable() throws -> [PairedScanSession]
-    //fetch single session?
 }
 
 extension DatabaseClient: DependencyKey {
     static let liveValue = Self(
-        saveSession: { objURL, faceURL in
-            // 1. Connect to the existing SQLite database file
+        saveSession: {scanId, objURL, faceURL in //save from camera feature
+            //Connect to the existing SQLite database file
             let container = try ModelContainer(for: PairedScanSession.self)
             
-            // 2. Create a fresh context for this specific background task
+            // Create a fresh context for this specific background task
             let context = ModelContext(container)
             
-            // 3. Initialize your data model
+            // Initialize data model
             let session = PairedScanSession(
-                id:UUID(),
+                id:scanId,
                 name: "Scan \(Date().formatted(date: .abbreviated, time: .shortened))",
                 scanOneURL: objURL,
                 scanTwoURL: faceURL
@@ -37,7 +36,8 @@ extension DatabaseClient: DependencyKey {
             context.insert(session)
             try context.save()
         },
-        deleteSession: {scanId, objUrl, faceUrl in
+        
+        deleteSession: {scanId, objUrl, faceUrl in //delete from scan review
             let fileManager = FileManager.default
             //delete from filemanager unless already removed
             try? fileManager.removeItem(at: objUrl)
@@ -53,7 +53,7 @@ extension DatabaseClient: DependencyKey {
                 try context.save()
             }
         },
-        fetchAllSessions: {
+        fetchAllSessions: { //get all for scan history
             let container = try ModelContainer(for: PairedScanSession.self)
             let context = ModelContext(container)
             

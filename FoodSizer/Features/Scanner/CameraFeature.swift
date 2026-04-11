@@ -24,9 +24,10 @@ struct CameraFeature {
         case saveToDataBase
         case delegate(Delegate)
         enum Delegate {
-           case scanSavedToDb
+            case scanSavedToDb(scanId:UUID,objUrl:URL,faceUrl:URL)
         }
       }
+    @Dependency(\.uuid) var uuid
     @Dependency(\.lidarClient) var lidarClient
     @Dependency(\.faceClient) var faceClient
     @Dependency(\.databaseClient) var databaseClient
@@ -72,14 +73,15 @@ var body: some Reducer<State, Action> {
             else{
                 return .none
             }
+            let newScanId = self.uuid()
             return .run { send in
                     do {
-                        try databaseClient.saveSession(objUrl, faceUrl)
+                        try databaseClient.saveSession(newScanId,objUrl, faceUrl)
                         print("SUCCESS: Database saved.")
                         
                         //trigger navigation to review screen
                        // await send(.delegate(.scanSuccessfullySaved))
-                        await send(.delegate(.scanSavedToDb))
+                        await send(.delegate(.scanSavedToDb(scanId: newScanId, objUrl: objUrl, faceUrl: faceUrl)))
                         
                     } catch {
                         print("ERROR: Failed to save to DB - \(error)")

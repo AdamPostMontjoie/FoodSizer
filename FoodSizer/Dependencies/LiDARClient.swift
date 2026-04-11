@@ -13,7 +13,7 @@ import simd
 struct LiDARClient: Sendable {
     var captureMesh: @Sendable (_ session: UncheckedSession) async throws -> URL
 }
-
+//this may not be properly saving meshes
 extension LiDARClient: DependencyKey {
     static let liveValue = Self(
         captureMesh: {session in

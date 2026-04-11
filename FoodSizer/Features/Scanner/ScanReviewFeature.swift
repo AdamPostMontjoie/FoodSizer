@@ -12,6 +12,7 @@
 //  Created by Adam Post-Montjoie on 3/22/26.
 //
 import ComposableArchitecture
+import Foundation
 
 @Reducer
 struct ScanReviewFeature {
@@ -28,18 +29,19 @@ struct ScanReviewFeature {
             case scanRemoved
         }
       }
-
+    @Dependency(\.databaseClient) var databaseClient
   var body: some Reducer<State, Action> {
     Reduce { state, action in
       switch action {
       case .deleteButtonTapped:
         return .run {[id = state.scanId, obj = state.objUrl, face = state.faceUrl] send in
-           //   await try deleteScanClient //implement to delete urls from swiftdata and phone
+            
             do {
             // try await deleteScanClient.delete(id: id, objUrl: obj, faceUrl: face)
+            try databaseClient.deleteSession(id,obj,face)
             print("SUCCESS: Deleted from SSD and SwiftData")
                               
-                              // 3. Fire the delegate directly from the background thread!
+                              
                 await send(.delegate(.scanRemoved))
              } catch {
                print("ERROR: Failed to delete - \(error)")
