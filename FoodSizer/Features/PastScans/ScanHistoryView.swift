@@ -18,46 +18,46 @@ struct ScanHistoryView: View {
                 ForEach(store.scans) { scan in
                     HStack {
                         // "l" - The Link
-                        NavigationLink(state: PastScanDetailFeature.State(name: scan.name)) {
-                            Text("l - \(scan.name)")
+                        NavigationLink(state: ScanReviewFeature.State(scanId: scan.id,
+                                                                      objUrl: scan.objUrl,
+                                                                      faceUrl: scan.faceUrl)) {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text(scan.name)
+                                    .font(.headline)
+                                
+                                // first 8 uuid characters
+                                Text("ID: \(scan.id.uuidString.prefix(8))")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
                         }
                         
                         Spacer()
                         
                         // "d" - The Delete Button
-                        Button("d") {
-                            // Make sure you add this action to your Reducer!
+                        Button(action: {
                             store.send(.deleteButtonTapped(id: scan.id))
+                        }) {
+                            // Using Apple's built-in vector icons
+                            Image(systemName: "trash")
                         }
                         .foregroundColor(.red)
                         .buttonStyle(.borderless)
+                       
                     }
                 }
             }
             .navigationTitle("History")
             // 2. The Dial (Alerts)
             .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
-            
+            .onAppear {
+                store.send(.onAppear)
+            }
         }
         destination: { store in
-                // 3. The Destination (Where the hallway leads)
-                // Swift automatically knows this 'store' belongs to PastScanDetailFeature
-                PastScanDetailView(store: store)
+                
+                ScanReviewView(store: store)
             }
     }
 }
 
-#Preview {
-    ScanHistoryView(
-        store: Store(
-            initialState: ScanHistoryFeature.State(
-                scans: [
-                    PastScan(id: UUID(), name: "Apple", info: 150),
-                    PastScan(id: UUID(), name: "Bowl of Rice", info: 350)
-                ]
-            )
-        ) {
-            ScanHistoryFeature()
-        }
-    )
-}

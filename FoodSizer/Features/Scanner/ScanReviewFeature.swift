@@ -26,7 +26,7 @@ struct ScanReviewFeature {
         case deleteButtonTapped
         case delegate(Delegate)
         enum Delegate{
-            case scanRemoved
+            case scanRemoved(UUID)
         }
       }
     @Dependency(\.databaseClient) var databaseClient
@@ -40,9 +40,7 @@ struct ScanReviewFeature {
             // try await deleteScanClient.delete(id: id, objUrl: obj, faceUrl: face)
             try databaseClient.deleteSession(id,obj,face)
             print("SUCCESS: Deleted from SSD and SwiftData")
-                              
-                              
-                await send(.delegate(.scanRemoved))
+                await send(.delegate(.scanRemoved(id)))
              } catch {
                print("ERROR: Failed to delete - \(error)")
                }

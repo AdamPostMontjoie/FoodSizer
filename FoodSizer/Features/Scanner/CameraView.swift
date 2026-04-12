@@ -43,5 +43,11 @@ struct CameraView:View {
                     .padding(.bottom, 40)
             }
         }
+        .onAppear {
+            store.send(.onAppear)
+        }
+        .onDisappear{
+            store.send(.onDisappear)
+        }
     }
 }

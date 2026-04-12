@@ -26,6 +26,7 @@ extension DatabaseClient: DependencyKey {
             let context = ModelContext(container)
             
             // Initialize data model
+            let now = Date.now
             let session = PairedScanSession(
                 id:scanId,
                 name: "Scan \(Date().formatted(date: .abbreviated, time: .shortened))",

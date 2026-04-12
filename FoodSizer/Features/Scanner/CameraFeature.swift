@@ -23,8 +23,11 @@ struct CameraFeature {
         case sessionCreated(UncheckedSession)
         case scanCompleted(URL)
         case saveToDataBase
+        case onDisappear
+        case onAppear
         case delegate(Delegate)
         case readyStateChanged(isReady:Bool)
+        case setMode(CameraMode)
         enum Delegate {
             case scanSavedToDb(scanId:UUID,objUrl:URL,faceUrl:URL)
         }
@@ -42,6 +45,20 @@ var body: some Reducer<State, Action> {
             return .none
         case let .readyStateChanged(isReady):
             state.isReadyToScan = isReady
+            return .none
+        case .onAppear:
+            // Only turn it back on if we aren't in the middle of a scan
+            if state.savedMeshUrl == nil {
+                state.currentMode = .lidar
+            } else if state.savedFaceUrl == nil {
+                state.currentMode = .face
+            }
+            return .none
+        case .onDisappear:
+            state.currentMode = .off
+            return .none
+        case let .setMode(mode):
+            state.currentMode = mode
             return .none
         case .scanButtonTapped:
             print("button tapped")
@@ -63,10 +80,14 @@ var body: some Reducer<State, Action> {
         case let .scanCompleted(url):
             if state.savedMeshUrl == nil {
                 state.savedMeshUrl = url
-                print("SUCCESS: Object Mesh saved to \(url)")
-                state.currentMode = .face
                 state.isReadyToScan = false
-                return .none
+                return .run { send in
+                    //state is mutated asynchronously to give the arview time to turn everything off
+                    //before turning it back on again
+                    await send(.setMode(.off))
+                    try await Task.sleep(for: .milliseconds(300))
+                    await send(.setMode(.face))
+                }
             }
             else {
                 state.savedFaceUrl = url

@@ -13,33 +13,62 @@ struct ScanHistoryFeature {
     @ObservableState
     struct State:Equatable {
         @Presents var destination:Destination.State?
-        var scans: IdentifiedArrayOf<PastScan> = [
-            PastScan(id: UUID(), name: "Apple", info: 150),
-            PastScan(id: UUID(), name: "Bowl of Rice", info: 350)
-        ]
-        var path = StackState<PastScanDetailFeature.State>()
+        var scans: IdentifiedArrayOf<PairedScan> = []
+        var path = StackState<ScanReviewFeature.State>()
     }
     enum Action {
+        case onAppear
+        case scansLoaded([PairedScan])
         case destination(PresentationAction<Destination.Action>)
-        case path(StackAction<PastScanDetailFeature.State,PastScanDetailFeature.Action>)
-        case deleteButtonTapped(id: PastScan.ID)
+        case path(StackAction<ScanReviewFeature.State,ScanReviewFeature.Action>)
+        case deleteButtonTapped(id:PairedScan.ID)
         enum Alert:Equatable {
-            case confirmDeletion(id:PastScan.ID)
+            case confirmDeletion(id:PairedScan.ID)
         }
         
     }
+    @Dependency(\.databaseClient) var databaseClient
     var body: some ReducerOf<Self> {
         Reduce { state, action in
             switch action {
-            
-            case .path:
+            case .onAppear:
+                return .run { send in
+                    do {
+                        let sessions = try databaseClient.fetchAllSessions()
+                        let pastScans = sessions.map {
+                            PairedScan(id: $0.id, name: $0.name, timestamp: $0.timestamp, objUrl: $0.scanOneURL, faceUrl: $0.scanTwoURL)
+                        }
+                        await send(.scansLoaded(pastScans))
+                    } catch {
+                        print("ERROR: Failed to fetch sessions - \(error)")
+                    }
+                }
+                            
+            case let .scansLoaded(scans):
+                state.scans = IdentifiedArray(uniqueElements: scans)
+                return .none
+            case let .path(.element(id: _, action: .delegate(.scanRemoved(scanId)))):
+                state.scans.remove(id: scanId)
                 return .none
             case let .deleteButtonTapped(id):
                 state.destination = .alert(.deleteConfirmation(id: id))
                 return .none
-            case let .destination(.presented(.alert(.confirmDeletion(id: id)))):
-                state.scans.remove(id: id)
+            case .path:
                 return .none
+            case let .destination(.presented(.alert(.confirmDeletion(id: id)))):
+                guard let scanToDelete = state.scans[id:id] else {return .none}
+                
+                state.scans.remove(id: id)
+                return .run { _ in
+                    do {
+                    try databaseClient.deleteSession(scanToDelete.id,scanToDelete.objUrl,scanToDelete.faceUrl)
+                    print("SUCCESS: Deleted from SSD and SwiftData")
+                     } catch {
+                       print("ERROR: Failed to delete - \(error)")
+                       }
+                  }
+                
+                
             case .destination:
                 return .none
             }
@@ -47,15 +76,17 @@ struct ScanHistoryFeature {
         }
         .ifLet(\.$destination, action: \.destination)
         .forEach(\.path, action: \.path) {
-                PastScanDetailFeature()
+                ScanReviewFeature()
             }
+        ._printChanges()
     }
 }
-
-struct PastScan: Equatable, Identifiable {
+struct PairedScan:Equatable, Identifiable {
     let id: UUID
-    var name: String
-    var info: Int
+    let name: String
+    let timestamp: Date
+    let objUrl:URL
+    let faceUrl:URL
 }
 
 extension ScanHistoryFeature {
