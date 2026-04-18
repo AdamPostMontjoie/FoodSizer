@@ -84,7 +84,6 @@ struct ARViewContainer: UIViewRepresentable {
                             config.sceneReconstruction = .meshWithClassification
                             uiView.debugOptions = [.showSceneUnderstanding]
                         }
-                        // IMPORTANT: .resetTracking and .removeExistingAnchors flush the old face tracking data from RAM
                         uiView.session.run(config, options: [.resetTracking, .removeExistingAnchors])
         case .face:
             let config = ARFaceTrackingConfiguration()

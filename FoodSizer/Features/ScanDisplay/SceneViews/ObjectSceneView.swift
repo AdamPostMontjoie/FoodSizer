@@ -1,4 +1,11 @@
 //
+//  ObjectView.swift
+//  FoodSizer
+//
+//  Created by Adam Post-Montjoie on 4/18/26.
+//
+
+//
 //  FaceView.swift
 //  FoodSizer
 //
@@ -8,14 +15,14 @@
 import SwiftUI
 import SceneKit
 
-struct FaceView : UIViewRepresentable {
-    let scene = SCNScene(named: "art.scnassets/ship.scn")!
-
+struct ObjectView : UIViewRepresentable {
+    let objectNode: SCNNode
+    
     func makeUIView(context: Context) -> SCNView {
         // create and add a camera to the scene
+        let scene = SCNScene()
         let cameraNode = SCNNode()
         cameraNode.camera = SCNCamera()
-        scene.rootNode.addChildNode(cameraNode)
 
         // place the camera
         cameraNode.position = SCNVector3(x: 0, y: 0, z: 15)
@@ -34,21 +41,15 @@ struct FaceView : UIViewRepresentable {
         ambientLightNode.light!.color = UIColor.darkGray
         scene.rootNode.addChildNode(ambientLightNode)
 
-        // retrieve the ship node
-        let ship = scene.rootNode.childNode(withName: "ship", recursively: true)!
+        // add the object node to scene
+        scene.rootNode.addChildNode(objectNode)
 
         // animate the 3d object
-        ship.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
+        objectNode.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
 
         // retrieve the SCNView
         let scnView = SCNView()
-        return scnView
-    }
-
-    func updateUIView(_ scnView: SCNView, context: Context) {
         scnView.scene = scene
-
-        // allows the user to manipulate the camera
         scnView.allowsCameraControl = true
 
         // show statistics such as fps and timing information
@@ -56,6 +57,12 @@ struct FaceView : UIViewRepresentable {
 
         // configure the view
         scnView.backgroundColor = UIColor.black
+        return scnView
+    }
+
+    func updateUIView(_ scnView: SCNView, context: Context) {
+        
+       
     }
 }
 
