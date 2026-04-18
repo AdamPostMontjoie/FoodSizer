@@ -7,27 +7,32 @@
 
 import ComposableArchitecture
 import SceneKit
+import Foundation
 
-struct SceneParsingClient:Sendable {
-    var parseFace: @Sendable (_ url: URL) async throws -> SCNNode
-    var parseObject: @Sendable (_ url: URL) async throws -> SCNNode
+struct SceneExtractionClient:Sendable {
+    var parseNode: @Sendable (_ url: URL) async throws -> SCNNode
 }
 
-extension SceneParsingClient:DependencyKey {
+extension SceneExtractionClient:DependencyKey {
     static let liveValue = Self(
-        //placeholders
-        parseFace: { faceUrl in
-            return SCNNode()
-        },
-        parseObject: { objUrl in
-            return SCNNode()
+        //unpack scene node from scene file and returns
+        parseNode: { fileUrl in
+            //use url to extract file
+            do {
+                let scene = try SCNScene(url: fileUrl, options: nil)
+                let node = scene.rootNode
+                return node
+            } catch{
+                print("failed to extract node from storage")
+                throw error
+            }
         }
     )
 }
 
 extension DependencyValues {
-    var sceneParsingClient: SceneParsingClient {
-        get { self[SceneParsingClient.self] }
-        set { self[SceneParsingClient.self] = newValue }
+    var sceneExtractionClient: SceneExtractionClient {
+        get { self[SceneExtractionClient.self] }
+        set { self[SceneExtractionClient.self] = newValue }
     }
 }
