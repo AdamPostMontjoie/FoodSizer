@@ -103,7 +103,7 @@ var body: some Reducer<State, Action> {
             let newScanId = self.uuid()
             return .run { send in
                     do {
-                        try databaseClient.saveSession(newScanId,objUrl, faceUrl)
+                        try await databaseClient.saveSession(newScanId,objUrl, faceUrl)
                         print("SUCCESS: Database saved.")
                         
                         //trigger navigation to review screen

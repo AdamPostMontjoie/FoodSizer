@@ -11,11 +11,13 @@ import SwiftData
 
 
 struct DatabaseClient:Sendable {
-    var saveSession: @Sendable (_ scanID:UUID, _ objURL: URL, _ faceURL: URL) throws -> Void
-    var deleteSession: @Sendable(_ scanId:UUID, _ objURL: URL, _ faceURL: URL) throws -> Void
+    //added asynchrony, may cause issues 
+    var saveSession: @Sendable (_ scanID:UUID, _ objURL: URL, _ faceURL: URL) async throws -> Void
+    var deleteSession: @Sendable(_ scanId:UUID, _ objURL: URL, _ faceURL: URL) async throws -> Void
     var fetchAllSessions: @Sendable() throws -> [PairedScanSession]
 }
 
+//potentially need modelactor?
 extension DatabaseClient: DependencyKey {
     static let liveValue = Self(
         saveSession: {scanId, objURL, faceURL in //save from camera feature

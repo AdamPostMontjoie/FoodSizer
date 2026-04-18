@@ -9,7 +9,7 @@
 import Foundation
 import ARKit
 import ComposableArchitecture
-import simd
+import SceneKit
 
 struct FaceClient: Sendable {
     var captureFace: @Sendable (_ session: UncheckedSession) async throws -> URL
@@ -18,39 +18,32 @@ struct FaceClient: Sendable {
 extension FaceClient: DependencyKey {
     static let liveValue = Self(
         captureFace: {session in
-            guard let frame = session.rawValue.currentFrame else { //ArFrame
+            guard let frame = session.rawValue.currentFrame,
+                  let fa = frame.anchors.compactMap({ $0 as? ARFaceAnchor }).first,
+                let device = MTLCreateSystemDefaultDevice(),
+                let faceGeometry = ARSCNFaceGeometry(device: device)
+            else { //ArFrame
                     struct FrameError: Error {}
                     throw FrameError()
             }
-            let faceAnchors = frame.anchors.compactMap{$0 as? ARFaceAnchor}
-            var objData = "# FoodSizer Face Scan\n"
-            var globalVertexOffset = 1
+            faceGeometry.update(from: fa.geometry)
+            let node = SCNNode(geometry: faceGeometry)
+            let scene = SCNScene()
+            scene.rootNode.addChildNode(node)
             
-            for fa in faceAnchors {
-                let geometry = fa.geometry
-                let vertices = geometry.vertices
-                let indices = geometry.triangleIndices
-                
-                
-                for vertex in vertices {
-                    objData += "v \(vertex.x) \(vertex.y) \(vertex.z)\n"
-                }
-                
-                for i in stride(from:0, to:indices.count, by:3){
-                    // .obj files start counting at 1, so we add the globalVertexOffset
-                    let v1 = Int(indices[i]) + globalVertexOffset
-                    let v2 = Int(indices[i+1]) + globalVertexOffset
-                    let v3 = Int(indices[i+2]) + globalVertexOffset
-                    
-                    objData += "f \(v1) \(v2) \(v3)\n"
-                }
-                globalVertexOffset += vertices.count
-            }
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-            let fileURL = documentsDirectory.appendingPathComponent("FaceScan-\(UUID().uuidString).obj")
+            let fileURL = documentsDirectory.appendingPathComponent("FaceScan-\(UUID().uuidString).usdz")
             
-            try objData.write(to: fileURL, atomically: true, encoding: .utf8)
-            return fileURL
+            
+            let success = scene.write(to: fileURL, options: nil, delegate: nil, progressHandler: nil)
+    
+            if success{
+                return fileURL
+            } else {
+                struct WriteError: Error {}
+                throw WriteError()
+            }
+            
         }
     )
 }

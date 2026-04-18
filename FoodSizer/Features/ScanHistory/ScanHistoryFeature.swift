@@ -61,7 +61,7 @@ struct ScanHistoryFeature {
                 state.scans.remove(id: id)
                 return .run { _ in
                     do {
-                    try databaseClient.deleteSession(scanToDelete.id,scanToDelete.objUrl,scanToDelete.faceUrl)
+                    try await databaseClient.deleteSession(scanToDelete.id,scanToDelete.objUrl,scanToDelete.faceUrl)
                     print("SUCCESS: Deleted from SSD and SwiftData")
                      } catch {
                        print("ERROR: Failed to delete - \(error)")

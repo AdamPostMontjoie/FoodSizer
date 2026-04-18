@@ -22,8 +22,9 @@ extension LiDARClient: DependencyKey {
                     throw FrameError()
             }
             let meshAnchors = frame.anchors.compactMap { $0 as? ARMeshAnchor }
-            var objData = "# FoodSizer LiDAR Scan\n"
-                        var globalVertexOffset = 1
+           
+            let scene = SCNScene()
+            
             for ma in meshAnchors {
                     let geometry = ma.geometry
                    
@@ -31,49 +32,54 @@ extension LiDARClient: DependencyKey {
                     let vertices = geometry.vertices
                     let vertexPointer = vertices.buffer.contents()
                     
-                // --- STEP A: EXTRACT VERTICES ---
-                    for vIndex in 0..<vertices.count {
-                        // Find exactly where this vertex lives in RAM
-                        let byteOffset = vertices.offset + (vIndex * vertices.stride)
-                        
-                        // Read the X, Y, Z coordinates securely
-                        let localVertex = vertexPointer.advanced(by: byteOffset).assumingMemoryBound(to: SIMD3<Float>.self).pointee
-                        
-                        // Convert the local point to a global point in the real room
-                        let worldVertex4 = transform * SIMD4<Float>(localVertex.x, localVertex.y, localVertex.z, 1.0)
-                        
-                        // Append it to our text file format
-                        objData.append("v \(worldVertex4.x) \(worldVertex4.y) \(worldVertex4.z)\n")
-                    }
+                var scnVertices: [SCNVector3] = []
+                scnVertices.reserveCapacity(vertices.count) //reserves enough memory for count * Scnvector3
+                    
+                for vIndex in 0..<vertices.count {
+                    let byteOffset = vertices.offset + (vIndex * vertices.stride)
+                    // Read the local X, Y, Z
+                    let localVertex = vertexPointer.advanced(by: byteOffset).assumingMemoryBound(to: SIMD3<Float>.self).pointee
+                    // Convert to SceneKit's vector format
+                    scnVertices.append(SCNVector3(localVertex.x, localVertex.y, localVertex.z))
+                }
+                    
                 let faces = geometry.faces
                 let facePointer = faces.buffer.contents()
                 let bytesPerFace = faces.bytesPerIndex * faces.indexCountPerPrimitive
                 let classificationBuffer = geometry.classification
+                var scnIndices: [Int32] = []
+                scnIndices.reserveCapacity(faces.count * 3) // 3 points per triangle
                 
                 for fIndex in 0..<faces.count {
-                    // Find the triangle in RAM
                     let byteOffset = fIndex * bytesPerFace
+                    let indices = facePointer.advanced(by: byteOffset).bindMemory(to: UInt32.self, capacity: 3)
                     
-                    // ARKit stores triangles as 3 4 byte integers
-                    let indices = facePointer.advanced(by: byteOffset).bindMemory(to: UInt32.self, capacity: faces.indexCountPerPrimitive)
-                    
-                    // Add our global offset so the triangles connect to the correct vertices
-                    let v1 = Int(indices[0]) + globalVertexOffset
-                    let v2 = Int(indices[1]) + globalVertexOffset
-                    let v3 = Int(indices[2]) + globalVertexOffset
-                    
-                    // Append the triangle face to the text file
-                    objData.append("f \(v1) \(v2) \(v3)\n")
+
+                    scnIndices.append(Int32(indices[0]))
+                    scnIndices.append(Int32(indices[1]))
+                    scnIndices.append(Int32(indices[2]))
                 }
-                globalVertexOffset += vertices.count
+                let source = SCNGeometrySource(vertices: scnVertices)
+                let element = SCNGeometryElement(indices: scnIndices, primitiveType: .triangles)
+                let scnGeometry = SCNGeometry(sources: [source], elements: [element])
+                
+                let node = SCNNode(geometry: scnGeometry)
+                node.simdTransform = ma.transform
+                
+                scene.rootNode.addChildNode(node)
             }
             
             let documentsDirectory = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first!
-            let fileURL = documentsDirectory.appendingPathComponent("ObjectScan-\(UUID().uuidString).obj")
+            let fileURL = documentsDirectory.appendingPathComponent("ObjectScan-\(UUID().uuidString).usdz")
             
-            try objData.write(to: fileURL, atomically: true, encoding: .utf8)
+            let success = scene.write(to: fileURL, options: nil, delegate: nil, progressHandler: nil)
             
-            return fileURL
+            if success {
+                return fileURL
+            } else {
+                struct WriteError: Error {}
+                throw WriteError()
+            }
         }
     )
 }

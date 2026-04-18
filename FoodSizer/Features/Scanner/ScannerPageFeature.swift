@@ -36,7 +36,7 @@ struct ScannerPageFeature {
                 state.camera.savedMeshUrl = nil //clear old urls
                 state.camera.savedFaceUrl = nil
                 return .none
-            case let .path(.element(id:_, action: .scanReview(.delegate(.scanRemoved(scanId))))):
+            case .path(.element(id:_, action: .scanReview(.delegate(.scanRemoved(_))))):
                 state.path.removeLast()
                 state.camera.currentMode = .lidar //CameraMode.lidar
                 state.camera.savedMeshUrl = nil //clear old urls
