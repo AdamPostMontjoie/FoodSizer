@@ -26,8 +26,8 @@ struct ScannerPageFeature {
                 
                 let reviewState = ScanReviewFeature.State(
                     scanId:id,
-                    objUrl:obj,
-                    faceUrl:face,
+                    objURL:obj,
+                    faceURL:face,
                     emotion:emotion
                 )
                 state.path.append(.scanReview(reviewState))

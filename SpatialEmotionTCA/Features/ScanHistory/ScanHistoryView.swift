@@ -12,15 +12,15 @@ struct ScanHistoryView: View {
     @Bindable var store: StoreOf<ScanHistoryFeature>
     
     var body: some View {
-        // 1. The Hallway (NavigationStack)
         NavigationStack(path: $store.scope(state: \.path, action: \.path)) {
             List {
                 ForEach(store.scans) { scan in
                     HStack {
-                        // "l" - The Link
                         NavigationLink(state: ScanReviewFeature.State(scanId: scan.id,
-                                                                      objUrl: scan.objUrl,
-                                                                      faceUrl: scan.faceUrl)) {
+                                                                      objURL: scan.objURL,
+                                                                      faceURL: scan.faceURL, emotion:scan.emotion))
+        
+                        {
                             VStack(alignment: .leading, spacing: 4) {
                                 Text(scan.name)
                                     .font(.headline)
@@ -35,7 +35,7 @@ struct ScanHistoryView: View {
                         Spacer()
                         
                         // "d" - The Delete Button
-                        Button(action: {
+                       Button(action: {
                             store.send(.deleteButtonTapped(id: scan.id))
                         }) {
                             // Using Apple's built-in vector icons
@@ -48,8 +48,8 @@ struct ScanHistoryView: View {
                 }
             }
             .navigationTitle("History")
-            // 2. The Dial (Alerts)
-            .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+            // Alerts
+          .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
             .onAppear {
                 store.send(.onAppear)
             }

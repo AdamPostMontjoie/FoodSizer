@@ -12,7 +12,7 @@ struct ScanReviewView: View {
     let store: StoreOf<ScanReviewFeature>
     var body: some View {
         VStack(spacing: 30) {
-            Text("3D Scans Captured!")
+            Text("Your emotion is \(store.emotion)")
                 .font(.title)
                 .fontWeight(.bold)
             

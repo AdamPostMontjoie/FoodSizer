@@ -21,8 +21,8 @@ struct ScanReviewFeature {
   @ObservableState
  struct State: Equatable {
         var scanId: UUID
-        var objUrl: URL
-        var faceUrl: URL
+        var objURL: URL
+        var faceURL: URL
         var emotion:String
         var faceNode:SCNNode?
         var objNode:SCNNode?
@@ -46,7 +46,7 @@ struct ScanReviewFeature {
       switch action {
           case .onAppear:
               return .merge(
-                .run { [url = state.faceUrl, id = state.scanId] send in
+                .run { [url = state.faceURL, id = state.scanId] send in
                         do {
                             let faceNode = try await sceneExtractionClient.parseNode(url)
                             //we have to send this back to the main thread
@@ -56,7 +56,7 @@ struct ScanReviewFeature {
                             await send(.delegate(.scanFailedToLoad(id)))
                         }
                     },
-                .run { [url = state.objUrl, id = state.scanId] send in
+                .run { [url = state.objURL, id = state.scanId] send in
                         do {
                             let objectNode = try await sceneExtractionClient.parseNode(url)
                             await send(.assembleObjectScene(objectNode))
@@ -73,7 +73,7 @@ struct ScanReviewFeature {
           state.objNode = objectNode
           return .none
           case .deleteButtonTapped:
-            return .run {[id = state.scanId, obj = state.objUrl, face = state.faceUrl] send in
+            return .run {[id = state.scanId, obj = state.objURL, face = state.faceURL] send in
                 do {
                 try await databaseClient.deleteSession(id,obj,face)
                 print("SUCCESS: Deleted from SSD and SwiftData")

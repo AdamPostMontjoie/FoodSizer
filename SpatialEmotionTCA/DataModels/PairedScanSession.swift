@@ -15,18 +15,18 @@ final class PairedScanSession {
     var timestamp: Date
     
     // pointers: These just tell RealityKit where to look on the SSD
-    var scanOneURL: URL
-    var scanTwoURL: URL
+    var objURL: URL
+    var faceURL: URL
     
     var emotion:String
     
     
-    init(id: UUID = UUID(), name: String, timestamp: Date = Date(), scanOneURL: URL, scanTwoURL: URL, emotion:String) {
+    init(id: UUID = UUID(), name: String, timestamp: Date = Date(), objURL: URL, faceURL: URL, emotion:String) {
         self.id = id
         self.name = name
         self.timestamp = timestamp
-        self.scanOneURL = scanOneURL
-        self.scanTwoURL = scanTwoURL
+        self.objURL = objURL
+        self.faceURL = faceURL
         self.emotion = emotion
     }
 }

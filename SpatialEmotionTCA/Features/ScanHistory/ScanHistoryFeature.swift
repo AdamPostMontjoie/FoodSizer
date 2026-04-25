@@ -37,7 +37,7 @@ struct ScanHistoryFeature {
                     do {
                         let sessions = try databaseClient.fetchAllSessions()
                         let pastScans = sessions.map {
-                            PairedScan(id: $0.id, name: $0.name, timestamp: $0.timestamp, objUrl: $0.scanOneURL, faceUrl: $0.scanTwoURL)
+                            PairedScan(id: $0.id, name: $0.name, timestamp: $0.timestamp, objURL: $0.objURL, faceURL: $0.faceURL, emotion: $0.emotion)
                         }
                         await send(.scansLoaded(pastScans))
                     } catch {
@@ -68,7 +68,7 @@ struct ScanHistoryFeature {
                 
                 return .run { _ in
                     do {
-                    try await databaseClient.deleteSession(scanToDelete.id,scanToDelete.objUrl,scanToDelete.faceUrl)
+                    try await databaseClient.deleteSession(scanToDelete.id,scanToDelete.objURL,scanToDelete.faceURL)
                     print("SUCCESS: Deleted from SSD and SwiftData")
                      } catch {
                        print("ERROR: Failed to delete - \(error)")
@@ -91,8 +91,9 @@ struct PairedScan:Equatable, Identifiable {
     let id: UUID
     let name: String
     let timestamp: Date
-    let objUrl:URL
-    let faceUrl:URL
+    let objURL:URL
+    let faceURL:URL
+    let emotion:String
 }
 
 extension ScanHistoryFeature {
