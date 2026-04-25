@@ -86,7 +86,7 @@ var body: some Reducer<State, Action> {
                     //state is mutated asynchronously to give the arview time to turn everything off
                     //before turning it back on again
                     await send(.setMode(.off))
-                    try await Task.sleep(for: .milliseconds(300))
+                    try await Task.sleep(for: .milliseconds(30))
                     await send(.setMode(.face))
                 }
             }

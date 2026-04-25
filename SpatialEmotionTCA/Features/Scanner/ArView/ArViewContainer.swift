@@ -92,6 +92,12 @@ struct ARViewContainer: UIViewRepresentable {
             uiView.session.pause()
         }
     }
+    static func dismantleUIView(_ uiView: ARView, coordinator: Coordinator) {
+        uiView.session.pause()
+        uiView.session.delegate = nil
+        uiView.scene.anchors.removeAll()
+        uiView.removeFromSuperview()
+    }
 }
 
 //we do not mutate ARSession ever, so it is ok to send
