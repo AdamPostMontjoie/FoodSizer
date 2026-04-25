@@ -10,6 +10,7 @@ import SceneKit
 
 struct FaceView : UIViewRepresentable {
     let faceNode: SCNNode
+    let faceColor: UIColor
     
     func makeUIView(context: Context) -> SCNView {
         // create and add a camera to the scene
@@ -33,23 +34,24 @@ struct FaceView : UIViewRepresentable {
         ambientLightNode.light!.type = .ambient
         ambientLightNode.light!.color = UIColor.darkGray
         scene.rootNode.addChildNode(ambientLightNode)
-
-        // retrieve the ship nod
+        faceNode.enumerateChildNodes { (child, _) in
+            if let geometry = child.geometry {
+                if geometry.firstMaterial == nil {
+                    geometry.firstMaterial = SCNMaterial()
+                }
+                geometry.firstMaterial?.diffuse.contents = faceColor
+            }
+        }
+        //add the face node to the scene
         scene.rootNode.addChildNode(faceNode)
-
-        // animate the 3d object
-      //  faceNode.runAction(SCNAction.repeatForever(SCNAction.rotateBy(x: 0, y: 2, z: 0, duration: 1)))
-
+        
         // retrieve the SCNView
         let scnView = SCNView()
         scnView.scene = scene
         scnView.allowsCameraControl = true
 
-        // show statistics such as fps and timing information
-        scnView.showsStatistics = true
-
         // configure the view
-        scnView.backgroundColor = UIColor.black
+        scnView.backgroundColor = UIColor.white
         return scnView
     }
 

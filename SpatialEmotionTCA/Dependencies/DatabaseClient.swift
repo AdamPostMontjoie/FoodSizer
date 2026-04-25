@@ -44,18 +44,32 @@ extension DatabaseClient: DependencyKey {
         deleteSession: {scanId, objUrl, faceUrl in //delete from scan review
             let fileManager = FileManager.default
             //delete from filemanager unless already removed
-            try? fileManager.removeItem(at: objUrl)
-            try? fileManager.removeItem(at: faceUrl)
+            do {
+                try fileManager.removeItem(at: objUrl)
+            } catch{
+                print("Failed to remove object scan file from system \(error)")
+            }
+            do {
+                try fileManager.removeItem(at: faceUrl)
+            } catch{
+                print("Failed to remove face scan file from system \(error)")
+            }
+            
             //Connect to SwiftData
             let container = try ModelContainer(for: PairedScanSession.self)
             let context = ModelContext(container)
             
            // Find the specific record and delete it
-            let descriptor = FetchDescriptor<PairedScanSession>(predicate: #Predicate { $0.id == scanId })
-            if let sessionToDelete = try context.fetch(descriptor).first {
-                context.delete(sessionToDelete)
-                try context.save()
+            do {
+                let descriptor = FetchDescriptor<PairedScanSession>(predicate: #Predicate { $0.id == scanId })
+                if let sessionToDelete = try context.fetch(descriptor).first {
+                    context.delete(sessionToDelete)
+                    try context.save()
+                }
+            } catch {
+                print("Failed to remove from SwiftData \(error)")
             }
+            
         },
         fetchAllSessions: { //get all for scan history
             let container = try ModelContainer(for: PairedScanSession.self)

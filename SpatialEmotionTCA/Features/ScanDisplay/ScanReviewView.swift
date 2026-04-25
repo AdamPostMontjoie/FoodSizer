@@ -17,7 +17,7 @@ struct ScanReviewView: View {
                 .fontWeight(.bold)
             
             if let faceNode = store.faceNode {
-                FaceView(faceNode: faceNode)
+                FaceView(faceNode: faceNode, faceColor: EmotionalColor( store.emotion))
                     .frame(height: 300)
                     .cornerRadius(12)
             } else {
@@ -76,4 +76,24 @@ struct ScanReviewView: View {
             }
         }
     }
+}
+
+func EmotionalColor(_ emotion:String) -> UIColor{
+    switch emotion{
+    case "Happy":
+        return .systemYellow
+    case "Sad":
+        return .systemBlue
+    case "Angry":
+        return .systemRed
+    case "IShowSpeed":
+        return .systemGreen
+    case "Neutral":
+        return .systemGray
+    case "Unknown":
+        return .systemMint
+    default:
+        return .black
+    }
+        
 }
