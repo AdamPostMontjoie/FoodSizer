@@ -49,7 +49,7 @@ struct ScanHistoryView: View {
             }
             .navigationTitle("History")
             // Alerts
-          .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
+            .alert($store.scope(state: \.destination?.alert, action: \.destination.alert))
             .onAppear {
                 store.send(.onAppear)
             }

@@ -9,7 +9,7 @@ import SwiftUI
 import ComposableArchitecture
 
 struct ScanReviewView: View {
-    let store: StoreOf<ScanReviewFeature>
+    @Bindable var store: StoreOf<ScanReviewFeature>
     var body: some View {
         VStack(spacing: 30) {
             Text("Your emotion is \(store.emotion)")
@@ -55,7 +55,7 @@ struct ScanReviewView: View {
                 
                 
                 HStack(spacing: 30) {
-                    Button("Delete Scan") { store.send(.deleteButtonTapped) }
+                    Button("Delete Scan") { store.send(.deleteButtonTapped(store.scanId)) }
                         .font(.title3)
                         .fontWeight(.bold)
                         .foregroundColor(.red)
@@ -70,10 +70,12 @@ struct ScanReviewView: View {
             .padding()
             .navigationTitle("Review Scan")
             .navigationBarTitleDisplayMode(.inline)
-            // start and stop scans/extraction
+            // start and stop scans/extraction\
+            .alert($store.scope(state: \.alert, action: \.alert))
             .onAppear {
                 store.send(.onAppear)
             }
+            
         }
     }
 }
