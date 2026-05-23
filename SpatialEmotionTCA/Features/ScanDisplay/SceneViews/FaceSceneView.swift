@@ -62,14 +62,7 @@ struct FaceView : UIViewRepresentable {
 
     func updateUIView(_ scnView: SCNView, context: Context) {
         
-       
     }
-    class Coordinator {
-        
-        }
-    func makeCoordinator() -> Coordinator {
-            return Coordinator()
-        }
     static func dismantleUIView(_ uiView: SCNView, coordinator: Coordinator) {
         uiView.scene?.rootNode.enumerateChildNodes { (node, _) in
             node.removeFromParentNode()
